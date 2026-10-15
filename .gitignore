@@ -1,0 +1,11 @@
+.venv/
+venv/
+**/.venv/
+**/venv/
+__pycache__/
+*.py[cod]
+*.db
+*.sqlite
+*.sqlite3
+*.wav
+voice-ai-assistant/

@@ -1,0 +1,10 @@
+streamlit
+numpy
+scipy
+openai-whisper
+pyttsx3
+streamlit-webrtc
+ollama
+requests
+duckduckgo-search
+sounddevice

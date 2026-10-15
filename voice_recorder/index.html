@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      margin: 0;
+      background: transparent;
+      color: inherit;
+      font-family: sans-serif;
+    }
+
+    button {
+      width: 48px;
+      height: 48px;
+      border: 0;
+      border-radius: 50%;
+      background: #262730;
+      color: white;
+      cursor: pointer;
+      font-size: 22px;
+    }
+
+    button[aria-pressed="true"] {
+      background: #d32f2f;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <button type="button" aria-label="Start voice recording" title="Speak">
+    🎙️
+  </button>
+  <script>
+    const button = document.querySelector("button");
+    let recorder;
+    let stream;
+    let chunks = [];
+
+    function sendToStreamlit(type, data = {}) {
+      window.parent.postMessage(
+        { isStreamlitMessage: true, type, ...data },
+        "*"
+      );
+    }
+
+    function sendValue(value) {
+      sendToStreamlit("streamlit:setComponentValue", {
+        dataType: "json",
+        value,
+      });
+    }
+
+    button.addEventListener("click", async () => {
+      if (recorder?.state === "recording") {
+        recorder.stop();
+        button.disabled = true;
+        button.textContent = "…";
+        button.title = "Finishing recording";
+        return;
+      }
+
+      button.disabled = true;
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const preferredType = [
+          "audio/webm;codecs=opus",
+          "audio/mp4",
+          "audio/ogg;codecs=opus",
+        ].find((type) => MediaRecorder.isTypeSupported(type));
+
+        recorder = new MediaRecorder(
+          stream,
+          preferredType ? { mimeType: preferredType } : undefined
+        );
+        chunks = [];
+        recorder.ondataavailable = (event) => {
+          if (event.data.size > 0) chunks.push(event.data);
+        };
+        recorder.onerror = (event) => {
+          recorder.onstop = null;
+          stream.getTracks().forEach((track) => track.stop());
+          sendValue({ error: event.error?.message || "Recording failed." });
+        };
+        recorder.onstop = async () => {
+          stream.getTracks().forEach((track) => track.stop());
+          const blob = new Blob(chunks, { type: recorder.mimeType });
+          if (!blob.size) {
+            sendValue({ error: "No audio was captured. Please try again." });
+            return;
+          }
+
+          const reader = new FileReader();
+          reader.onload = () => {
+            const audio = String(reader.result).split(",", 2)[1];
+            sendValue({ audio, mimeType: blob.type });
+          };
+          reader.onerror = () => sendValue({ error: "Could not read the recording." });
+          reader.readAsDataURL(blob);
+        };
+        recorder.start();
+        button.textContent = "⏹";
+        button.setAttribute("aria-label", "Stop voice recording");
+        button.setAttribute("aria-pressed", "true");
+        button.title = "Stop recording";
+        button.disabled = false;
+      } catch (error) {
+        if (stream) stream.getTracks().forEach((track) => track.stop());
+        button.disabled = false;
+        sendValue({ error: error.message || "Could not access the microphone." });
+      }
+    });
+
+    window.addEventListener("message", (event) => {
+      if (event.data?.type === "streamlit:render") {
+        sendToStreamlit("streamlit:setFrameHeight", { height: 56 });
+      }
+    });
+
+    sendToStreamlit("streamlit:componentReady", { apiVersion: 1 });
+    sendToStreamlit("streamlit:setFrameHeight", { height: 56 });
+  </script>
+</body>
+</html>
