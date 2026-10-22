@@ -5,16 +5,13 @@ import whisper
 import pyttsx3
 
 
-# =====================================================
+
 # WHISPER MODEL
-# =====================================================
+
 
 model = whisper.load_model("base")
 
-
-# =====================================================
 # RECORD AUDIO
-# =====================================================
 
 def record_audio(filename="input.wav", duration=15, samplerate=16000):
 
@@ -38,9 +35,8 @@ def record_audio(filename="input.wav", duration=15, samplerate=16000):
     print("✅ Recording complete!")
 
 
-# =====================================================
+
 # SPEECH TO TEXT
-# =====================================================
 
 def speech_to_text(filename="input.wav"):
 
@@ -58,9 +54,8 @@ def speech_to_text(filename="input.wav"):
     return text
 
 
-# =====================================================
+
 # TEXT TO SPEECH
-# =====================================================
 
 def text_to_speech(text):
 
