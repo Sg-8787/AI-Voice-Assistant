@@ -4,10 +4,8 @@ import operator
 import requests
 from duckduckgo_search import DDGS
 
+1. CALCULATOR TOOL
 
-# =====================================================
-# 1. CALCULATOR TOOL
-# =====================================================
 
 def calculator(expression: str):
 
@@ -66,9 +64,9 @@ def calculator(expression: str):
         return f"Calculation error: {e}"
 
 
-# =====================================================
+
 # 2. TIME TOOL
-# =====================================================
+
 
 def get_current_time():
 
@@ -114,9 +112,8 @@ def web_search(query: str):
         return f"Web search error: {e}"
 
 
-# =====================================================
+
 # 4. WEATHER TOOL
-# =====================================================
 
 def get_weather(city: str):
 
@@ -185,9 +182,8 @@ def get_weather(city: str):
         return f"Weather error: {e}"
 
 
-# =====================================================
+
 # ALL AVAILABLE TOOLS
-# =====================================================
 
 TOOLS = {
 
